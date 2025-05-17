@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.sleeptracker">
+
+    <!-- INTERNET: Needed if your app communicates with a backend -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- MICROPHONE: For detecting sounds during sleep -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- SENSORS PERMISSION: Required for sensors on Android 13+ -->
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+
+    <!-- FOREGROUND SERVICE: Required for persistent background services -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- NETWORK STATE: Optional, but useful for checking connectivity -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- ACTIVITY RECOGNITION: For detecting physical activity on newer devices -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
+    <!-- WAKE LOCK: To keep device awake during sleep monitoring -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- FOREGROUND SERVICE TYPES: Required for Android 14+ (API 34+) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+
+    <!-- POST NOTIFICATIONS: For Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" tools:targetApi="33" />
+
+    <!-- RECEIVE BOOT COMPLETED: To restart service after device reboot -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SleepTracker"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:targetApi="31">
+
+        <!-- Launcher/Main Activity -->
+        <activity
+            android:name=".auth.LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Registration Activity -->
+        <activity
+            android:name=".auth.RegisterActivity"
+            android:exported="true" />
+
+        <!-- Home Activity -->
+        <activity
+            android:name=".home.HomeActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SleepTracker.NoActionBar" />
+
+        <!-- Sleep Event Viewer -->
+        <activity
+            android:name=".sensor.DisplayEventsActivity"
+            android:exported="true" />
+
+        <!-- Sleep Monitor Activity (if exists) -->
+        <activity
+            android:name=".sensor.SleepMonitorActivity"
+            android:exported="false" />
+
+        <!-- Google Play Services Meta-Data (optional) -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <!-- Sleep Monitoring Foreground Service -->
+        <service
+            android:name=".sensor.SleepMonitorService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+    </application>
+
+</manifest>
