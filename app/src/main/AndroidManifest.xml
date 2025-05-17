@@ -66,10 +66,17 @@
             android:exported="true"
             android:theme="@style/Theme.SleepTracker.NoActionBar" />
 
+        <!-- Sleep History Activity -->
+        <activity
+            android:name=".home.SleepHistoryActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SleepTracker.NoActionBar" />
+
         <!-- Sleep Event Viewer -->
         <activity
             android:name=".sensor.DisplayEventsActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.SleepTracker.NoActionBar" />
 
         <!-- Sleep Monitor Activity (if exists) -->
         <activity

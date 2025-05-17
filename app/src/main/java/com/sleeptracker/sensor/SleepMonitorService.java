@@ -47,8 +47,15 @@ public class SleepMonitorService extends Service implements SensorEventListener 
     // Lower values will make it more sensitive
     private static final int SOUND_THRESHOLD = 300;
 
-    // Flag to control if movement detection is enabled
-    private static final boolean ENABLE_MOVEMENT_DETECTION = false;
+    // Flag to control if movement detection is enabled - Changed to true
+    private static final boolean ENABLE_MOVEMENT_DETECTION = true;
+
+    // Adjust movement threshold to appropriate sensitivity (reduced for more sensitivity)
+    private static final float MOVEMENT_THRESHOLD = 1.0f;
+
+    // Cooldown period for movement detection to avoid excessive notifications (milliseconds)
+    private static final long MOVEMENT_COOLDOWN = 5000; // 5 seconds
+    private long lastMovementTime = 0;
 
     // Key for passing events back to the activity
     public static final String EXTRA_SLEEP_EVENTS = "sleep_events";
@@ -62,7 +69,6 @@ public class SleepMonitorService extends Service implements SensorEventListener 
     private Sensor accelerometer;
 
     private float lastX, lastY, lastZ;
-    private static final float MOVEMENT_THRESHOLD = 5.0f; // Adjust for sensitivity
 
     // Changed from private final to static to make accessible
     private static final ArrayList<String> events = new ArrayList<>();
@@ -216,9 +222,11 @@ public class SleepMonitorService extends Service implements SensorEventListener 
                 Log.d(TAG, "Accelerometer registered successfully");
             } else {
                 Log.e(TAG, "No accelerometer found!");
+                addEvent("Error: No accelerometer found on this device");
             }
         } else {
             Log.e(TAG, "Could not get sensor service!");
+            addEvent("Error: Could not access device sensors");
         }
     }
 
@@ -235,10 +243,24 @@ public class SleepMonitorService extends Service implements SensorEventListener 
             float deltaY = Math.abs(y - lastY);
             float deltaZ = Math.abs(z - lastZ);
 
-            if ((deltaX > MOVEMENT_THRESHOLD || deltaY > MOVEMENT_THRESHOLD || deltaZ > MOVEMENT_THRESHOLD)) {
-                String msg = "Movement detected at " + sdf.format(new Date());
+            // Apply cooldown to prevent flooding with movement events
+            long currentTime = System.currentTimeMillis();
+            boolean cooldownPassed = (currentTime - lastMovementTime) > MOVEMENT_COOLDOWN;
+
+            // Check if movement exceeds threshold and cooldown has passed
+            if ((deltaX > MOVEMENT_THRESHOLD || deltaY > MOVEMENT_THRESHOLD || deltaZ > MOVEMENT_THRESHOLD)
+                    && cooldownPassed) {
+                // Calculate movement intensity for reporting
+                float intensity = (deltaX + deltaY + deltaZ) / 3;
+
+                String msg = "Movement detected at " + sdf.format(new Date()) +
+                        " (Intensity: " + String.format("%.2f", intensity) + ")";
+
                 addEvent(msg);
                 sendEventNotification(msg);
+
+                // Update cooldown timestamp
+                lastMovementTime = currentTime;
             }
 
             lastX = x;

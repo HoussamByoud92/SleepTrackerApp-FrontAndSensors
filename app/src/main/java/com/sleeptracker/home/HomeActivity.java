@@ -1,7 +1,7 @@
 package com.sleeptracker.home;
 
-import android.Manifest;
 import android.content.Intent;
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -97,6 +97,10 @@ public class HomeActivity extends AppCompatActivity {
         MaterialButton btnViewEvents = findViewById(R.id.btnViewEvents);
         btnViewEvents.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, DisplayEventsActivity.class)));
 
+        // Add button for viewing sleep history
+        MaterialButton btnViewHistory = findViewById(R.id.btnViewHistory);
+        btnViewHistory.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, SleepHistoryActivity.class)));
+
         btnSleepToggle.setOnClickListener(v -> toggleSleep());
 
         session = new SessionManager(this);
@@ -124,6 +128,13 @@ public class HomeActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
             permissionsNeeded.add(Manifest.permission.RECORD_AUDIO);
+        }
+
+        // Check for sensor permissions on newer Android versions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                        != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.ACTIVITY_RECOGNITION);
         }
 
         // Post notifications permission for Android 13+

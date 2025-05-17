@@ -30,7 +30,35 @@
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
-            <!-- Card for Average Sleep -->
+            <!-- Timer with styling -->
+            <TextView
+                android:id="@+id/tvTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="10dp"
+                android:padding="16dp"
+                android:background="@drawable/timer_background"
+                android:text="00:00"
+                android:textColor="#333"
+                android:textSize="50sp"
+                android:textStyle="bold"
+                android:elevation="4dp" />
+
+            <!-- Start Sleep Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSleepToggle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:backgroundTint="@color/purple_500"
+                android:icon="@drawable/ic_bedtime"
+                android:iconTint="@android:color/white"
+                android:text="Start Sleep"
+                android:textColor="@android:color/white"
+                app:cornerRadius="12dp" />
+
+
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -76,38 +104,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Start Sleep Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSleepToggle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="2dp"
-                android:backgroundTint="@color/purple_500"
-                android:icon="@drawable/ic_bedtime"
-                android:iconTint="@android:color/white"
-                android:text="Start Sleep"
-                android:textColor="@android:color/white"
-                app:cornerRadius="12dp" />
-
-
-
-            <!-- Timer with styling -->
-            <TextView
-                android:id="@+id/tvTimer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:padding="16dp"
-                android:background="@drawable/timer_background"
-                android:text="00:00"
-                android:textColor="#333"
-                android:textSize="50sp"
-                android:textStyle="bold"
-                android:elevation="4dp" />
-
-            <!-- Sleep Monitoring Button -->
-
             <!-- View Events Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnViewEvents"
@@ -116,6 +112,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="View Last Night Events" />
+
+            <!-- View Sleep History Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewHistory"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="View Sleep History"
+                app:iconTint="@color/purple_500" />
 
             <!-- Label above sessions -->
             <LinearLayout
