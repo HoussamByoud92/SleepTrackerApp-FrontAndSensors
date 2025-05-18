@@ -11,12 +11,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.material.button.MaterialButton;
@@ -32,6 +31,9 @@ import org.json.JSONException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +50,7 @@ public class DisplayEventsActivity extends AppCompatActivity {
 
     private static final String TAG = "DisplayEventsActivity";
     private TextView tvSessionStart, tvSessionEnd, tvSessionDuration, tvEventCount, tvNoEvents;
-    private BarChart eventsChart;
+    private LineChart eventsChart;
     private RecyclerView recyclerViewEvents;
     private MaterialButton btnBack;
     private ApiService apiService;
@@ -190,99 +192,219 @@ public class DisplayEventsActivity extends AppCompatActivity {
 
     private void setupEventsChart(Date startDate) {
         try {
-            // Group events by hour
-            Map<String, Map<String, Integer>> eventCounts = new HashMap<>();
-            eventCounts.put("Sound", new TreeMap<>());
-            eventCounts.put("Movement", new TreeMap<>());
+            // Parse and extract event times from events list
+            List<Date> soundEventTimes = new ArrayList<>();
+            List<Date> movementEventTimes = new ArrayList<>();
+            List<Float> soundIntensities = new ArrayList<>();
+            List<Float> movementIntensities = new ArrayList<>();
 
-            // Set up time slots for the chart (hourly bins)
-            long sessionStartMillis = startDate.getTime();
+            // Get start and end time of session for X-axis bounds
+            Date sessionStartDate = sdfInput.parse(currentSession.getStart());
+            Date sessionEndDate = sdfInput.parse(currentSession.getStop());
+
+            // Calculate total duration in milliseconds for scaling
+            long sessionDurationMillis = sessionEndDate.getTime() - sessionStartDate.getTime();
+
+            // Parse events and extract timestamps
             for (String event : eventsList) {
-                String timeStr = null;
-                String category = null;
+                try {
+                    String timeStr = null;
+                    float intensity = 0f;
 
-                // Extract time and category from event string
-                if (event.contains("Sound detected at ")) {
-                    timeStr = event.substring("Sound detected at ".length(),
-                            event.indexOf(" (Amplitude"));
-                    category = "Sound";
-                } else if (event.contains("Movement detected at ")) {
-                    timeStr = event.substring("Movement detected at ".length(),
-                            event.indexOf(" (Intensity"));
-                    category = "Movement";
-                }
+                    // Extract time and intensity from event string
+                    if (event.contains("Sound detected at ")) {
+                        timeStr = event.substring("Sound detected at ".length(),
+                                event.indexOf(" (Amplitude"));
+                        String amplitudeStr = extractValue(event, "Amplitude: ", ")");
+                        intensity = Float.parseFloat(amplitudeStr);
 
-                if (timeStr != null) {
-                    try {
-                        // Get hour mark for binning
-                        String hourMark = timeStr.substring(0, 2) + ":00";
+                        Date eventTime = timeFormat.parse(timeStr);
+                        if (eventTime != null) {
+                            soundEventTimes.add(eventTime);
+                            soundIntensities.add(intensity);
+                        }
+                    } else if (event.contains("Movement detected at ")) {
+                        timeStr = event.substring("Movement detected at ".length(),
+                                event.indexOf(" (Intensity"));
+                        String intensityStr = extractValue(event, "Intensity: ", ")");
+                        intensity = Float.parseFloat(intensityStr);
 
-                        // Increment event count for this hour and category
-                        Map<String, Integer> categoryMap = eventCounts.get(category);
-                        categoryMap.put(hourMark, categoryMap.getOrDefault(hourMark, 0) + 1);
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error processing time: " + timeStr, e);
+                        Date eventTime = timeFormat.parse(timeStr);
+                        if (eventTime != null) {
+                            movementEventTimes.add(eventTime);
+                            movementIntensities.add(intensity);
+                        }
                     }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error processing event: " + event, e);
                 }
             }
 
-            // Create chart entries
-            List<BarEntry> soundEntries = new ArrayList<>();
-            List<BarEntry> movementEntries = new ArrayList<>();
-            List<String> timeLabels = new ArrayList<>();
+            // Create chart entries based on timeline positions
+            List<Entry> soundEntries = new ArrayList<>();
+            List<Entry> movementEntries = new ArrayList<>();
 
-            // Combine all hour marks from both categories
-            TreeMap<String, Integer> allHours = new TreeMap<>();
-            for (String hourMark : eventCounts.get("Sound").keySet()) {
-                allHours.put(hourMark, 0);
-            }
-            for (String hourMark : eventCounts.get("Movement").keySet()) {
-                allHours.put(hourMark, 0);
+            // Calculate x-value positions for the chart based on time elapsed since start
+            // For sound events
+            for (int i = 0; i < soundEventTimes.size(); i++) {
+                Date eventTime = soundEventTimes.get(i);
+
+                // Convert time string to Calendar to get hours and minutes
+                Calendar eventCal = Calendar.getInstance();
+                eventCal.setTime(eventTime);
+
+                // Extract hour and minute from session start
+                Calendar startCal = Calendar.getInstance();
+                startCal.setTime(sessionStartDate);
+
+                // Calculate minutes since session start
+                long startTimeMinutes = startCal.get(Calendar.HOUR_OF_DAY) * 60 + startCal.get(Calendar.MINUTE);
+                long eventTimeMinutes = eventCal.get(Calendar.HOUR_OF_DAY) * 60 + eventCal.get(Calendar.MINUTE);
+
+                // Handle case where event might be next day
+                if (eventTimeMinutes < startTimeMinutes) {
+                    eventTimeMinutes += 24 * 60; // Add a day in minutes
+                }
+
+                // Calculate x position (0 to 1 scale)
+                float minutesSinceStart = eventTimeMinutes - startTimeMinutes;
+                float xPosition = minutesSinceStart / (float)(sessionDurationMillis / (1000 * 60));
+
+                // Add entry with position and intensity
+                soundEntries.add(new Entry(xPosition, soundIntensities.get(i)));
             }
 
-            // If no events, add at least the start hour
-            if (allHours.isEmpty()) {
-                SimpleDateFormat hourFormat = new SimpleDateFormat("HH:00", Locale.getDefault());
-                allHours.put(hourFormat.format(startDate), 0);
+            // For movement events (same logic)
+            for (int i = 0; i < movementEventTimes.size(); i++) {
+                Date eventTime = movementEventTimes.get(i);
+
+                Calendar eventCal = Calendar.getInstance();
+                eventCal.setTime(eventTime);
+
+                Calendar startCal = Calendar.getInstance();
+                startCal.setTime(sessionStartDate);
+
+                long startTimeMinutes = startCal.get(Calendar.HOUR_OF_DAY) * 60 + startCal.get(Calendar.MINUTE);
+                long eventTimeMinutes = eventCal.get(Calendar.HOUR_OF_DAY) * 60 + eventCal.get(Calendar.MINUTE);
+
+                if (eventTimeMinutes < startTimeMinutes) {
+                    eventTimeMinutes += 24 * 60;
+                }
+
+                float minutesSinceStart = eventTimeMinutes - startTimeMinutes;
+                float xPosition = minutesSinceStart / (float)(sessionDurationMillis / (1000 * 60));
+
+                movementEntries.add(new Entry(xPosition, movementIntensities.get(i)));
             }
 
-            // Create chart entries
-            int index = 0;
-            for (String hourMark : allHours.keySet()) {
-                timeLabels.add(hourMark);
-                soundEntries.add(new BarEntry(index, eventCounts.get("Sound").getOrDefault(hourMark, 0)));
-                movementEntries.add(new BarEntry(index, eventCounts.get("Movement").getOrDefault(hourMark, 0)));
-                index++;
-            }
+            // Sort entries by X value to ensure proper line connection
+            Collections.sort(soundEntries, new Comparator<Entry>() {
+                @Override
+                public int compare(Entry e1, Entry e2) {
+                    return Float.compare(e1.getX(), e2.getX());
+                }
+            });
+
+            Collections.sort(movementEntries, new Comparator<Entry>() {
+                @Override
+                public int compare(Entry e1, Entry e2) {
+                    return Float.compare(e1.getX(), e2.getX());
+                }
+            });
 
             // Create datasets
-            BarDataSet soundDataSet = new BarDataSet(soundEntries, "Sound Events");
-            soundDataSet.setColor(ColorTemplate.rgb("#FF9800"));  // Orange color
+            LineDataSet soundDataSet = new LineDataSet(soundEntries, "Sound");
+            soundDataSet.setColor(ColorTemplate.rgb("#FF6D00"));
+            soundDataSet.setLineWidth(2f);
+            soundDataSet.setDrawFilled(false);  // No fill for clearer view of timeline
+            soundDataSet.setDrawCircles(true);
+            soundDataSet.setCircleColor(ColorTemplate.rgb("#FF6D00"));
+            soundDataSet.setCircleHoleColor(ColorTemplate.rgb("#FFFFFF"));
+            soundDataSet.setCircleRadius(4f);
+            soundDataSet.setDrawValues(false);  // Hide values for cleaner timeline look
+            soundDataSet.setMode(LineDataSet.Mode.LINEAR);  // Connect with lines
 
-            BarDataSet movementDataSet = new BarDataSet(movementEntries, "Movement Events");
-            movementDataSet.setColor(ColorTemplate.rgb("#2196F3"));  // Blue color
+            LineDataSet movementDataSet = new LineDataSet(movementEntries, "Movement");
+            movementDataSet.setColor(ColorTemplate.rgb("#0069C0"));
+            movementDataSet.setLineWidth(2f);
+            movementDataSet.setDrawFilled(false);
+            movementDataSet.setDrawCircles(true);
+            movementDataSet.setCircleColor(ColorTemplate.rgb("#0069C0"));
+            movementDataSet.setCircleHoleColor(ColorTemplate.rgb("#FFFFFF"));
+            movementDataSet.setCircleRadius(4f);
+            movementDataSet.setDrawValues(false);
+            movementDataSet.setMode(LineDataSet.Mode.LINEAR);
 
-            // Create bar data
-            BarData barData = new BarData(soundDataSet, movementDataSet);
-            barData.setBarWidth(0.35f);
+            // Create line data
+            LineData lineData = new LineData();
+            if (!soundEntries.isEmpty()) {
+                lineData.addDataSet(soundDataSet);
+            }
+            if (!movementEntries.isEmpty()) {
+                lineData.addDataSet(movementDataSet);
+            }
 
-            // Set up chart
-            eventsChart.setData(barData);
+            // Set up chart appearance
+            eventsChart.setData(lineData);
             eventsChart.getDescription().setEnabled(false);
             eventsChart.setDrawGridBackground(false);
-            eventsChart.getLegend().setEnabled(true);
+            eventsChart.setBackgroundColor(ColorTemplate.rgb("#FFFFFF"));
+            eventsChart.setDrawBorders(false);
 
-            // X-axis setup
+            // Improve legend appearance
+            eventsChart.getLegend().setEnabled(true);
+            eventsChart.getLegend().setForm(com.github.mikephil.charting.components.Legend.LegendForm.CIRCLE);
+            eventsChart.getLegend().setTextSize(12f);
+            eventsChart.getLegend().setTextColor(ColorTemplate.rgb("#333333"));
+
+            // Interaction settings
+            eventsChart.setTouchEnabled(true);
+            eventsChart.setDragEnabled(true);
+            eventsChart.setScaleEnabled(true);
+            eventsChart.setPinchZoom(true);
+
+            // Format X-axis as a time axis from start to end
             XAxis xAxis = eventsChart.getXAxis();
             xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            xAxis.setGranularity(1f);
-            xAxis.setValueFormatter(new IndexAxisValueFormatter(timeLabels));
-            xAxis.setLabelRotationAngle(45f);
+            xAxis.setDrawGridLines(false);
+            xAxis.setAxisMinimum(0f);
+            xAxis.setAxisMaximum(1f);  // Full session duration normalized to 1.0
+            xAxis.setTextSize(10f);
+            xAxis.setTextColor(ColorTemplate.rgb("#333333"));
 
-            // Group the bars
-            float groupSpace = 0.1f;
-            float barSpace = 0.05f;
-            eventsChart.groupBars(0, groupSpace, barSpace);
+            // Custom formatter to show times based on position in sleep session
+            xAxis.setValueFormatter(new com.github.mikephil.charting.formatter.ValueFormatter() {
+                @Override
+                public String getFormattedValue(float value) {
+                    // Convert normalized position (0-1) back to time
+                    long timeOffsetMillis = (long) (value * sessionDurationMillis);
+                    Date pointDate = new Date(sessionStartDate.getTime() + timeOffsetMillis);
+                    return timeFormat.format(pointDate);
+                }
+            });
+
+            // Show time labels at start, 25%, 50%, 75% and end of sleep session
+            xAxis.setLabelCount(5, true);
+
+            // Improve Y-axis appearance
+            com.github.mikephil.charting.components.YAxis leftAxis = eventsChart.getAxisLeft();
+            leftAxis.setDrawLabels(true);
+            leftAxis.setTextColor(ColorTemplate.rgb("#333333"));
+            leftAxis.setTextSize(10f);
+            leftAxis.setAxisMinimum(0f);
+            leftAxis.setDrawGridLines(true);
+            leftAxis.setGridColor(ColorTemplate.rgb("#EEEEEE"));
+
+            // Remove right Y-axis
+            eventsChart.getAxisRight().setEnabled(false);
+
+            // Add some padding
+            eventsChart.setExtraBottomOffset(10f);
+            eventsChart.setExtraLeftOffset(10f);
+            eventsChart.setExtraRightOffset(10f);
+
+            // Add chart animation
+            eventsChart.animateX(1000);
 
             // Refresh chart
             eventsChart.invalidate();
@@ -290,6 +412,18 @@ public class DisplayEventsActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "Error setting up chart", e);
             Toast.makeText(this, "Error creating events chart", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Helper method to extract values from event strings
+    private String extractValue(String event, String prefix, String suffix) {
+        try {
+            int startIndex = event.indexOf(prefix) + prefix.length();
+            int endIndex = event.indexOf(suffix, startIndex);
+            return event.substring(startIndex, endIndex);
+        } catch (Exception e) {
+            Log.e(TAG, "Error extracting value from event: " + event, e);
+            return "0";
         }
     }
 

@@ -187,12 +187,13 @@
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
-                    <!-- Graph placeholder - will be filled with actual chart -->
-                    <com.github.mikephil.charting.charts.BarChart
+                    <!-- Changed to LineChart for area chart with improved height -->
+                    <com.github.mikephil.charting.charts.LineChart
                         android:id="@+id/eventsChart"
                         android:layout_width="match_parent"
-                        android:layout_height="250dp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_height="280dp"
+                        android:layout_marginTop="8dp"
+                        android:padding="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
