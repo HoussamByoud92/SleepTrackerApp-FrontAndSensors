@@ -16,6 +16,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -44,6 +45,8 @@ dependencies {
     implementation("com.google.android.material:material:1.9.0")
     implementation ("com.google.android.gms:play-services-auth:21.0.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
 
 
 }
