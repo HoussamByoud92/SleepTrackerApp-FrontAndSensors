@@ -18,15 +18,59 @@
             android:id="@+id/tvPopupTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Last night's events:"
-            android:textSize="18sp"
+            android:text="Sleep Analysis"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvPopupContent"
+            android:id="@+id/tvSleepQualityScore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="Sleep Quality: N/A" />
+
+        <!-- Sleep Stages Chart -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Sleep Stages"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/sleepStagesChart"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="8dp" />
+
+        <!-- Sleep Duration Chart -->
+        <TextView
+            android:id="@+id/tvSleepDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textSize="16sp"
+            android:text="Sleep Duration: N/A" />
+
+        <!-- Insights Section -->
+        <TextView
+            android:id="@+id/tvAiAnalysisTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Insights:"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvAiAnalysisContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:paddingTop="8dp"
-            android:text="No events recorded" />
+            android:text="No AI analysis available." />
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

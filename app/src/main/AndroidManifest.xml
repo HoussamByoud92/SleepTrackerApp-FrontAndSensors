@@ -48,7 +48,8 @@
         <!-- Launcher/Main Activity -->
         <activity
             android:name=".auth.LoginActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.SleepTracker.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -58,7 +59,8 @@
         <!-- Registration Activity -->
         <activity
             android:name=".auth.RegisterActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.SleepTracker.NoActionBar" />
 
         <!-- Home Activity -->
         <activity

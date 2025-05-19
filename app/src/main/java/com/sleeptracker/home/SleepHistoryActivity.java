@@ -8,15 +8,29 @@ import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import android.graphics.Color;
+import android.view.WindowManager;
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.animation.Easing;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.github.mikephil.charting.animation.Easing;
 import com.google.android.material.button.MaterialButton;
 import com.sleeptracker.R;
+import com.sleeptracker.analysis.SleepAnalysisManager;
 import com.sleeptracker.api.ApiClient;
 import com.sleeptracker.api.ApiService;
+import com.sleeptracker.model.SleepInsight;
 import com.sleeptracker.model.SleepSession;
 import com.sleeptracker.utils.SessionManager;
 
@@ -202,19 +216,110 @@ public class SleepHistoryActivity extends AppCompatActivity {
     }
 
     private void showEventsPopup(SleepSession session) {
-        // Reuse the same events popup logic from HomeActivity
         View view = getLayoutInflater().inflate(R.layout.popup_sleep_events, null);
-        TextView tvTitle = view.findViewById(R.id.tvPopupTitle);
-        TextView tvContent = view.findViewById(R.id.tvPopupContent);
+        TextView tvSleepQualityScore = view.findViewById(R.id.tvSleepQualityScore);
+        TextView tvAiAnalysisContent = view.findViewById(R.id.tvAiAnalysisContent);
+        TextView tvSleepDuration = view.findViewById(R.id.tvSleepDuration);
 
-        String events = session.getEvents();
-        tvContent.setText(events.equals("[]") ? "No events recorded." : formatEventsForDisplay(events));
+        // Initialize pie chart
+        com.github.mikephil.charting.charts.PieChart sleepStagesChart = view.findViewById(R.id.sleepStagesChart);
 
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        // Generate and display AI analysis
+        SleepAnalysisManager analysisManager = new SleepAnalysisManager(this);
+
+        try {
+            // Calculate sleep duration
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            Date startDate = sdf.parse(session.getStart());
+            Date endDate = sdf.parse(session.getStop());
+
+            if (startDate != null && endDate != null) {
+                long durationMinutes = TimeUnit.MILLISECONDS.toMinutes(endDate.getTime() - startDate.getTime());
+                long hours = durationMinutes / 60;
+                long mins = durationMinutes % 60;
+                tvSleepDuration.setText("Sleep Duration: " + hours + "h " + mins + "m");
+            } else {
+                tvSleepDuration.setText("Sleep Duration: N/A");
+            }
+        } catch (ParseException e) {
+            Log.e(TAG, "Error parsing dates", e);
+            tvSleepDuration.setText("Sleep Duration: N/A");
+        }
+
+        // Calculate sleep quality score
+        int qualityScore = analysisManager.calculateSleepQualityScore(session);
+        String qualityDescription = analysisManager.getSleepQualityDescription(qualityScore);
+        tvSleepQualityScore.setText("Sleep Quality: " + qualityScore + " (" + qualityDescription + ")");
+
+        // Generate insights
+        List<SleepInsight> insights = analysisManager.generateInsights(session);
+
+        // Format insights for display
+        StringBuilder insightsText = new StringBuilder();
+        for (SleepInsight insight : insights) {
+            insightsText.append("• ").append(insight.getTitle()).append(": ")
+                    .append(insight.getDescription()).append("\n\n");
+        }
+
+        tvAiAnalysisContent.setText(insightsText.toString().trim());
+
+        // Configure and display sleep stages chart
+        PieData sleepStagesData = analysisManager.analyzeSleepStages(session);
+        configureSleepStagesChart(sleepStagesChart, sleepStagesData);
+
+        // Show the dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(view);
         builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
-        builder.show();
+
+        // Create a wider dialog for better chart display
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Set dialog width to 90% of screen width
+        if (dialog.getWindow() != null) {
+            WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+            layoutParams.copyFrom(dialog.getWindow().getAttributes());
+            layoutParams.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
+            dialog.getWindow().setAttributes(layoutParams);
+        }
     }
+
+    private void configureSleepStagesChart(PieChart chart, PieData data) {
+        // Basic chart configuration
+        chart.setUsePercentValues(true);
+        chart.getDescription().setEnabled(false);
+        chart.setExtraOffsets(5, 10, 5, 5);
+        chart.setDragDecelerationFrictionCoef(0.95f);
+
+        // Center hole configuration
+        chart.setDrawHoleEnabled(true);
+        chart.setHoleColor(Color.WHITE);
+        chart.setTransparentCircleColor(Color.WHITE);
+        chart.setTransparentCircleAlpha(110);
+        chart.setHoleRadius(58f);
+        chart.setTransparentCircleRadius(61f);
+
+        // Center text
+        chart.setDrawCenterText(true);
+        chart.setCenterText("Sleep\nStages");
+        chart.setCenterTextSize(16f);
+
+        // Legend configuration
+        chart.getLegend().setEnabled(true);
+        chart.getLegend().setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+        chart.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
+        chart.getLegend().setOrientation(Legend.LegendOrientation.VERTICAL);
+        chart.getLegend().setDrawInside(false);
+        chart.getLegend().setTextSize(12f);
+
+        // Set data and animate
+        chart.setData(data);
+        chart.highlightValues(null);
+        chart.invalidate();
+        chart.animateY(1400, Easing.EaseInOutQuad);
+    }
+
 
     // Format events JSON for better display (reused from HomeActivity)
     private String formatEventsForDisplay(String eventsJson) {
