@@ -33,7 +33,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.sleeptracker.R;
+import com.sleeptracker.alarm.SmartAlarmActivity;
 import com.sleeptracker.analysis.SleepAnalysisManager;
 import com.sleeptracker.api.ApiClient;
 import com.sleeptracker.api.ApiService;
@@ -109,7 +111,11 @@ public class HomeActivity extends AppCompatActivity {
 
         MaterialButton btnViewEvents = findViewById(R.id.btnViewEvents);
         btnViewEvents.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, DisplayEventsActivity.class)));
-
+        MaterialCardView cardSmartAlarm = findViewById(R.id.cardSmartAlarm);
+        cardSmartAlarm.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, SmartAlarmActivity.class);
+            startActivity(intent);
+        });
         // Add button for viewing sleep history
         MaterialButton btnViewHistory = findViewById(R.id.btnViewHistory);
         btnViewHistory.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, SleepHistoryActivity.class)));

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_with_overlay">>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="24dp"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <!-- Header with Back Button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageButton
+                    android:id="@+id/btnBackArrow"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_baseline_arrow_back_24"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Back"
+                    app:tint="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Smart Alarm"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <!-- Sleep Stats -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Sleep Statistics"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/purple_500"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvAvgSleepTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Average sleep: Loading..."
+                        android:textSize="16sp"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvSleepDebt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Sleep debt: Calculating..."
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Recommended Wake Time -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardRecommended"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#E6F7FF"
+                >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_alarm"
+                        app:tint="#2196F3"
+                        android:layout_marginEnd="16dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Recommended Wake Time"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#2196F3" />
+
+                        <TextView
+                            android:id="@+id/tvRecommendedWakeTime"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Calculating..."
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#2196F3" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="(Tap to use this time)"
+                            android:textSize="12sp"
+                            android:textStyle="italic" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Time Picker -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Set Wake-up Time"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Set Alarm Button -->
+
+            <TimePicker
+                android:id="@+id/timePicker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:timePickerMode="clock" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSetAlarm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Set Smart Alarm"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/button_bg"/>
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
