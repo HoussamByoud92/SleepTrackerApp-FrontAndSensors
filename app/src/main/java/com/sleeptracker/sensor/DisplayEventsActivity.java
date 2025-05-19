@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,16 +13,22 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.sleeptracker.R;
+import com.sleeptracker.adapter.InsightsAdapter;
+import com.sleeptracker.analysis.SleepAnalysisManager;
 import com.sleeptracker.api.ApiClient;
 import com.sleeptracker.api.ApiService;
+import com.sleeptracker.model.SleepInsight;
 import com.sleeptracker.model.SleepSession;
 import com.sleeptracker.utils.SessionManager;
 
@@ -55,6 +62,16 @@ public class DisplayEventsActivity extends AppCompatActivity {
     private MaterialButton btnBack;
     private ApiService apiService;
 
+    // AI Sleep Analysis components
+    private PieChart sleepStagesChart;
+    private CircularProgressIndicator sleepQualityIndicator;
+    private TextView tvSleepScore, tvSleepQualityDesc, tvNoAnalysis;
+    private RecyclerView recyclerViewInsights;
+    private MaterialButton btnGenerateAnalysis;
+    private ProgressBar progressAnalysis;
+    private SleepAnalysisManager analysisManager;
+    private List<SleepInsight> insights = new ArrayList<>();
+
     private final SimpleDateFormat sdfInput = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     private final SimpleDateFormat sdfDisplay = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
@@ -77,6 +94,19 @@ public class DisplayEventsActivity extends AppCompatActivity {
         recyclerViewEvents = findViewById(R.id.recyclerViewEvents);
         btnBack = findViewById(R.id.btnBack);
 
+        // Initialize AI analysis views
+        sleepStagesChart = findViewById(R.id.sleepStagesChart);
+        sleepQualityIndicator = findViewById(R.id.sleepQualityIndicator);
+        tvSleepScore = findViewById(R.id.tvSleepScore);
+        tvSleepQualityDesc = findViewById(R.id.tvSleepQualityDesc);
+        tvNoAnalysis = findViewById(R.id.tvNoAnalysis);
+        recyclerViewInsights = findViewById(R.id.recyclerViewInsights);
+        btnGenerateAnalysis = findViewById(R.id.btnGenerateAnalysis);
+        progressAnalysis = findViewById(R.id.progressAnalysis);
+
+        // Initialize analysis manager
+        analysisManager = new SleepAnalysisManager(this);
+
         ImageButton backArrowButton = findViewById(R.id.btnBackArrow);
         backArrowButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,9 +117,13 @@ public class DisplayEventsActivity extends AppCompatActivity {
 
         // Set up RecyclerView
         recyclerViewEvents.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewInsights.setLayoutManager(new LinearLayoutManager(this));
 
         // Back button listener
         btnBack.setOnClickListener(v -> finish());
+
+        // Generate analysis button listener
+        btnGenerateAnalysis.setOnClickListener(v -> generateSleepAnalysis());
 
         // Initialize API service
         apiService = ApiClient.getClient().create(ApiService.class);
@@ -167,11 +201,99 @@ public class DisplayEventsActivity extends AppCompatActivity {
                     setupEventsChart(startDate);
                     setupEventsRecyclerView();
                 }
+
+                // Reset AI analysis views to default state
+                resetAnalysisViews();
             }
         } catch (ParseException e) {
             Log.e(TAG, "Error parsing dates", e);
             Toast.makeText(this, "Error parsing session dates", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void resetAnalysisViews() {
+        // Reset sleep quality indicator
+        sleepQualityIndicator.setProgress(0);
+        tvSleepScore.setText("--");
+        tvSleepQualityDesc.setText("Not analyzed");
+
+        // Reset sleep stages chart
+        sleepStagesChart.clear();
+        sleepStagesChart.setNoDataText("No analysis data");
+        sleepStagesChart.invalidate();
+
+        // Reset insights
+        insights.clear();
+        recyclerViewInsights.setAdapter(new InsightsAdapter(insights));
+
+        // Show message and enable button
+        tvNoAnalysis.setVisibility(View.VISIBLE);
+        tvNoAnalysis.setText("Click 'Generate Analysis' to analyze your sleep pattern");
+        btnGenerateAnalysis.setEnabled(true);
+        progressAnalysis.setVisibility(View.GONE);
+    }
+
+    private void generateSleepAnalysis() {
+        if (currentSession == null) {
+            Toast.makeText(this, "No sleep session data available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Show loading state
+        progressAnalysis.setVisibility(View.VISIBLE);
+        tvNoAnalysis.setText("Analyzing your sleep pattern...");
+        tvNoAnalysis.setVisibility(View.VISIBLE);
+        btnGenerateAnalysis.setEnabled(false);
+
+        // Use a background thread for analysis to avoid blocking UI
+        new Thread(() -> {
+            // Calculate sleep quality score
+            int sleepScore = analysisManager.calculateSleepQualityScore(currentSession);
+            String qualityDesc = analysisManager.getSleepQualityDescription(sleepScore);
+
+            // Generate sleep stage data
+            PieData sleepStagesData = analysisManager.analyzeSleepStages(currentSession);
+
+            // Generate insights
+            insights = analysisManager.generateInsights(currentSession);
+
+            // Update UI on main thread
+            runOnUiThread(() -> {
+                // Update sleep quality indicator
+                sleepQualityIndicator.setProgress(sleepScore);
+                tvSleepScore.setText(String.valueOf(sleepScore));
+                tvSleepQualityDesc.setText(qualityDesc);
+
+                // Set up sleep stages chart
+                sleepStagesChart.setData(sleepStagesData);
+                sleepStagesChart.getDescription().setEnabled(false);
+                sleepStagesChart.setUsePercentValues(true);
+                sleepStagesChart.setDrawHoleEnabled(true);
+                sleepStagesChart.setHoleColor(android.graphics.Color.WHITE);
+                sleepStagesChart.setHoleRadius(40f);
+                sleepStagesChart.setTransparentCircleRadius(45f);
+                sleepStagesChart.setDrawEntryLabels(true);
+                sleepStagesChart.setEntryLabelTextSize(12f);
+                sleepStagesChart.setEntryLabelColor(android.graphics.Color.WHITE);
+                sleepStagesChart.getLegend().setEnabled(true);
+                sleepStagesChart.getLegend().setTextSize(12f);
+                sleepStagesChart.getLegend().setWordWrapEnabled(true);
+                sleepStagesChart.animateY(1000);
+
+                // Set up insights recycler view
+                InsightsAdapter insightsAdapter = new InsightsAdapter(insights);
+                recyclerViewInsights.setAdapter(insightsAdapter);
+
+                // Hide loading indicators
+                progressAnalysis.setVisibility(View.GONE);
+                tvNoAnalysis.setVisibility(insights.isEmpty() ? View.VISIBLE : View.GONE);
+                if (insights.isEmpty()) {
+                    tvNoAnalysis.setText("No insights available");
+                }
+
+                btnGenerateAnalysis.setEnabled(true);
+            });
+        }).start();
     }
 
     private void parseEvents(String eventsJson) {
@@ -470,8 +592,6 @@ public class DisplayEventsActivity extends AppCompatActivity {
                 eventIndicator = itemView.findViewById(R.id.eventIndicator);
             }
 
-
-
             public void bind(String event, int position) {
                 // Extract event type and time
                 String eventType = null;
@@ -528,7 +648,6 @@ public class DisplayEventsActivity extends AppCompatActivity {
                     return "";
                 }
             }
-
         }
     }
 }

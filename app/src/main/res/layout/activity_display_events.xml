@@ -197,6 +197,159 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- AI Sleep Analysis Card - NEW -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/aiAnalysisCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_baseline_psychology_24"
+                            app:tint="@color/purple_500" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="AI Sleep Analysis"
+                            android:textColor="#333"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <ProgressBar
+                            android:id="@+id/progressAnalysis"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:indeterminateTint="@color/purple_500"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <!-- Sleep quality score -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/sleepQualityIndicator"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="16dp"
+                            app:trackThickness="8dp"
+                            app:indicatorSize="80dp"
+                            app:trackColor="#E0E0E0"
+                            app:indicatorColor="@color/purple_500"
+                            app:trackCornerRadius="4dp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Sleep Quality Score"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#333" />
+
+                            <TextView
+                                android:id="@+id/tvSleepScore"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="28sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/purple_500" />
+
+                            <TextView
+                                android:id="@+id/tvSleepQualityDesc"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Analyzing..."
+                                android:textSize="14sp"
+                                android:textColor="#666" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Sleep stage analysis -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Sleep Stages"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#333"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/sleepStagesChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- AI Insights Section -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="AI Insights"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#333"
+                        android:layout_marginBottom="8dp" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewInsights"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:nestedScrollingEnabled="false" />
+
+                    <TextView
+                        android:id="@+id/tvNoAnalysis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Analyzing your sleep pattern..."
+                        android:textColor="#666"
+                        android:gravity="center"
+                        android:visibility="visible" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnGenerateAnalysis"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="8dp"
+                        android:text="Generate Analysis"
+                        android:textColor="@android:color/white"
+                        app:cornerRadius="12dp"
+                        android:backgroundTint="@color/purple_500" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Label above events list -->
             <LinearLayout
                 android:layout_width="match_parent"
