@@ -4,12 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F6F6">
+    android:background="@color/background_overlay">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
+        android:padding="24dp"
         android:fillViewport="true">
 
         <LinearLayout
@@ -18,47 +18,48 @@
             android:orientation="vertical"
             android:gravity="center_horizontal">
 
+
             <!-- Welcome Text -->
             <TextView
                 android:id="@+id/tvWelcome"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="8dp"
                 android:text="Welcome back!"
-                android:textColor="#333"
+                android:textColor="@color/text_primary"
                 android:textSize="22sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="8dp" />
 
-            <!-- Timer with styling -->
+            <!-- Timer -->
+
+            <!-- Start Sleep Button -->
             <TextView
                 android:id="@+id/tvTimer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:layout_marginBottom="10dp"
-                android:padding="16dp"
                 android:background="@drawable/timer_background"
+                android:elevation="4dp"
+                android:padding="16dp"
                 android:text="00:00"
-                android:textColor="#333"
+                android:textColor="@color/purple_500"
                 android:textSize="50sp"
-                android:textStyle="bold"
-                android:elevation="4dp" />
+                android:textStyle="bold" />
 
-            <!-- Start Sleep Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSleepToggle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="15dp"
-                android:backgroundTint="@color/purple_500"
+                android:background="@drawable/button_bg"
+                android:text="Start Sleep"
+                android:textColor="@color/text_primary"
                 android:icon="@drawable/ic_bedtime"
                 android:iconTint="@android:color/white"
-                android:text="Start Sleep"
-                android:textColor="@android:color/white"
-                app:cornerRadius="12dp" />
+                android:padding="0dp" />
 
-
+            <!-- Average Sleep Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -89,7 +90,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Average Sleep (7 days)"
-                            android:textColor="#666"
+                            android:textColor="@color/purple_500"
                             android:textSize="16sp" />
 
                         <TextView
@@ -97,33 +98,35 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="7h 23m"
-                            android:textColor="#000"
+                            android:textColor="@color/purple_500"
                             android:textSize="22sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- View Events Button -->
+            <!-- Buttons -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnViewEvents"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="View Last Night Events" />
+                android:background="@drawable/button_bg"
+                android:text="View Last Night Events"
+                android:textColor="@color/text_primary"
+                android:padding="0dp" />
 
-            <!-- View Sleep History Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnViewHistory"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:background="@drawable/button_bg"
                 android:text="View Sleep History"
-                app:iconTint="@color/purple_500" />
+                android:textColor="@color/text_primary"
+                android:padding="0dp" />
 
-            <!-- Label above sessions -->
+            <!-- Section Title -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -137,18 +140,18 @@
                     android:layout_height="20dp"
                     android:layout_marginEnd="6dp"
                     android:src="@drawable/ic_baseline_show_chart_24"
-                    app:tint="@color/purple_500" />
+                    app:tint="@color/white" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Recent Sleep Sessions"
-                    android:textColor="#444"
+                    android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Sleep sessions list -->
+            <!-- RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerSleepSessions"
                 android:layout_width="match_parent"

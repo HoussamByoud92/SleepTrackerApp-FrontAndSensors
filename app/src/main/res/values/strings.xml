@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SleepTracker</string>
+    <string name="logo_description">Sleep App Logo</string>
 </resources>
