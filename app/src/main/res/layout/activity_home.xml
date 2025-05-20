@@ -41,7 +41,7 @@
 
                 <TextView
                     android:id="@+id/tvTimer"
-                    android:layout_width="wrap_content"
+                    android:layout_width="174dp"
                     android:layout_height="wrap_content"
                     android:background="@drawable/timer_background"
                     android:elevation="4dp"
@@ -56,15 +56,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="18dp"
                     app:cardElevation="10dp">
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="169dp"
                         android:layout_height="wrap_content"
+                        android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="12dp"
-                        android:gravity="center">
+                        android:padding="12dp">
 
                         <ImageView
                             android:layout_width="32dp"
