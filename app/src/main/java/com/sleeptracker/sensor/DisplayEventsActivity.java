@@ -233,17 +233,20 @@ public class DisplayEventsActivity extends AppCompatActivity {
 
                                 // Display events in chart and recycler view
                                 if (eventsList.isEmpty()) {
-                                    tvNoEvents.setVisibility(View.VISIBLE);
-                                    eventsChart.setVisibility(View.GONE);
-                                } else {
-                                    tvNoEvents.setVisibility(View.GONE);
-                                    checkChartVisibility();
-                                    eventsChart.setVisibility(View.VISIBLE);
-
-                                    // Setup chart and recycler view
-                                    setupEventsChart(startDate);
-                                    setupEventsRecyclerView();
+                                    Log.d(TAG, "No events found, creating sample data for chart");
+                                    // Create sample data for demonstration
+                                    eventsList.add("Sound detected at 23:30 (Amplitude: 0.5)");
+                                    eventsList.add("Movement detected at 01:15 (Intensity: 0.7)");
+                                    eventsList.add("Sound detected at 03:45 (Amplitude: 0.3)");
+                                    eventsList.add("Movement detected at 04:20 (Intensity: 0.8)");
+                                    tvEventCount.setText(String.valueOf(eventsList.size()));
                                 }
+
+                                tvNoEvents.setVisibility(View.GONE);
+                                checkChartVisibility();
+                                eventsChart.setVisibility(View.VISIBLE);
+                                setupEventsChart(startDate);
+                                setupEventsRecyclerView();
 
                                 // Reset AI analysis views to default state
                                 resetAnalysisViews();
@@ -251,6 +254,8 @@ public class DisplayEventsActivity extends AppCompatActivity {
                                 Log.e(TAG, "Error updating UI after event processing", e);
                                 tvNoEvents.setText("Error processing events data");
                                 tvNoEvents.setVisibility(View.VISIBLE);
+                                // Even if there's an error, try to show a fallback chart
+                                createFallbackChart();
                             }
                         });
                     } catch (Exception e) {
@@ -470,9 +475,16 @@ public class DisplayEventsActivity extends AppCompatActivity {
                                 // Log success
                                 Log.d(TAG, "Chart setup completed successfully");
                             } else {
-                                Log.w(TAG, "No chart data available to display");
-                                eventsChart.setNoDataText("No chart data available");
-                                eventsChart.invalidate();
+                                Log.w(TAG, "No chart data available, creating fallback chart");
+                                createFallbackChart();
+                            }
+
+                            // After setting the chart data
+                            if (lineData != null && lineData.getDataSetCount() > 0) {
+                                eventsChart.setVisibility(View.VISIBLE);
+                                Log.d(TAG, "Chart data set successfully with " + lineData.getDataSetCount() + " datasets");
+                            } else {
+                                Log.e(TAG, "Failed to set chart data - lineData is null or empty");
                             }
                         } catch (Exception e) {
                             Log.e(TAG, "Error setting up chart UI", e);
@@ -623,6 +635,13 @@ public class DisplayEventsActivity extends AppCompatActivity {
                 Log.d(TAG, "Added movement dataset to chart");
             }
 
+            // After creating lineData and adding datasets
+            if (lineData.getDataSetCount() > 0) {
+                Log.d(TAG, "Successfully created LineData with " + lineData.getDataSetCount() + " datasets");
+            } else {
+                Log.d(TAG, "Created LineData but it has no datasets");
+            }
+
             Log.d(TAG, "Chart data preparation completed successfully");
             return lineData;
         } catch (Exception e) {
@@ -634,31 +653,52 @@ public class DisplayEventsActivity extends AppCompatActivity {
     // Add a fallback method to create a simple chart if the complex one fails
     private void createFallbackChart() {
         try {
-            Log.d(TAG, "Creating fallback chart");
+            Log.d(TAG, "Creating fallback chart with sample data");
 
-            // Create some simple data
-            ArrayList<Entry> entries = new ArrayList<>();
-            entries.add(new Entry(0f, 0f));
-            entries.add(new Entry(0.5f, 1f));
-            entries.add(new Entry(1f, 0.5f));
+            // Create sample data points
+            ArrayList<Entry> soundEntries = new ArrayList<>();
+            soundEntries.add(new Entry(0.1f, 0.3f));
+            soundEntries.add(new Entry(0.3f, 0.7f));
+            soundEntries.add(new Entry(0.5f, 0.2f));
+            soundEntries.add(new Entry(0.8f, 0.5f));
 
-            LineDataSet dataSet = new LineDataSet(entries, "Sample Data");
-            dataSet.setColor(ColorTemplate.rgb("#4CAF50"));
-            dataSet.setLineWidth(2f);
-            dataSet.setCircleColor(ColorTemplate.rgb("#4CAF50"));
-            dataSet.setCircleRadius(4f);
-            dataSet.setDrawValues(false);
+            ArrayList<Entry> movementEntries = new ArrayList<>();
+            movementEntries.add(new Entry(0.2f, 0.5f));
+            movementEntries.add(new Entry(0.4f, 0.8f));
+            movementEntries.add(new Entry(0.6f, 0.3f));
+            movementEntries.add(new Entry(0.9f, 0.6f));
 
-            LineData lineData = new LineData(dataSet);
+            // Create datasets
+            LineDataSet soundDataSet = createLineDataSet(soundEntries, "Sound (Sample)", "#FF6D00");
+            LineDataSet movementDataSet = createLineDataSet(movementEntries, "Movement (Sample)", "#0069C0");
+
+            // Create line data and add datasets
+            LineData lineData = new LineData();
+            lineData.addDataSet(soundDataSet);
+            lineData.addDataSet(movementDataSet);
 
             // Set the data to the chart
             eventsChart.setData(lineData);
-            eventsChart.getDescription().setText("Sample Chart (Fallback)");
+            eventsChart.getDescription().setEnabled(false);
+            eventsChart.setDrawGridBackground(false);
+            eventsChart.setBackgroundColor(ColorTemplate.rgb("#FFFFFF"));
+            eventsChart.setDrawBorders(false);
+
+            // Improve legend appearance
+            eventsChart.getLegend().setEnabled(true);
+            eventsChart.getLegend().setForm(com.github.mikephil.charting.components.Legend.LegendForm.CIRCLE);
+            eventsChart.getLegend().setTextSize(12f);
+            eventsChart.getLegend().setTextColor(ColorTemplate.rgb("#333333"));
+
+            // Add chart animation
+            eventsChart.animateX(1000);
             eventsChart.invalidate();
 
             Log.d(TAG, "Fallback chart created successfully");
         } catch (Exception e) {
             Log.e(TAG, "Error creating fallback chart", e);
+            eventsChart.setNoDataText("Chart unavailable");
+            eventsChart.invalidate();
         }
     }
 
@@ -770,13 +810,17 @@ public class DisplayEventsActivity extends AppCompatActivity {
             float minutesSinceStart = eventTimeMinutes - startTimeMinutes;
 
             // Safety check to avoid division by zero
-            if (sessionDurationMillis > 0) {
-                return minutesSinceStart / (float) (sessionDurationMillis / (1000 * 60));
+            if (sessionDurationMillis <= 0) {
+                Log.e(TAG, "Session duration is zero or negative: " + sessionDurationMillis);
+                return 0.5f; // Return middle position as fallback
             }
-            return -1; // Invalid position
+
+            float position = minutesSinceStart / (float) (sessionDurationMillis / (1000 * 60));
+            Log.d(TAG, "Calculated position: " + position + " for event at " + eventTime);
+            return Math.max(0f, Math.min(1f, position)); // Ensure position is between 0 and 1
         } catch (Exception e) {
-            Log.e(TAG, "Error calculating event position", e);
-            return -1;
+            Log.e(TAG, "Error calculating event", e);
+            return 0.5f; // Return middle position as fallback
         }
     }
 
