@@ -62,6 +62,10 @@ GET  /get_user_sessions.php // Get user sleep history
 
 
 
+https://github.com/user-attachments/assets/a2dbcd31-a894-441c-b0c2-01b02a4623d7
+
+
+
 ---
 
 ## 🧠 Smart Alarm Logic
