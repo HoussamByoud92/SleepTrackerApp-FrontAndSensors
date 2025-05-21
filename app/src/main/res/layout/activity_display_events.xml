@@ -345,7 +345,7 @@
                         android:layout_marginTop="8dp"
                         android:text="Generate Analysis"
                         android:textColor="@android:color/white"
-                        app:cornerRadius="12dp"
+                        app:cornerRadius="18dp"
                         android:backgroundTint="@color/purple_500" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

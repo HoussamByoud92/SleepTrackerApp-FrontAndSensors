@@ -161,7 +161,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/white"
-                android:timePickerMode="clock" />
+                app:cornerRadius="25dp"
+                android:timePickerMode="spinner" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSetAlarm"
@@ -170,7 +171,8 @@
                 android:layout_marginTop="16dp"
                 android:text="Set Smart Alarm"
                 android:textColor="@color/text_primary"
-                android:background="@drawable/button_bg"/>
+                android:backgroundTint="#2196F3"
+                app:cornerRadius="25dp"/>
         </LinearLayout>
     </ScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

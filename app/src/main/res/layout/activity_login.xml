@@ -26,9 +26,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/input_bg"
+            android:inputType="textEmailAddress"
             android:padding="16dp"
-            android:textColor="@color/black"
-            android:inputType="textEmailAddress" />
+            android:textColor="@color/black" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -53,9 +53,11 @@
         android:layout_height="wrap_content"
         android:text="Login"
         android:layout_marginTop="20dp"
-        android:background="@drawable/input_bg"
-        android:textColor="@color/text_primary"
-        android:padding="12dp" />
+        android:backgroundTint="#2196F3"
+        app:cornerRadius="25dp"
+        android:padding="15dp"
+        android:textColor="@android:color/white"/>
+
 
     <TextView
         android:id="@+id/tvGoRegister"

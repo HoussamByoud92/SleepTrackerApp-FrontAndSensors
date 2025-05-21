@@ -91,7 +91,6 @@
                         android:text="Select Date"
                         android:backgroundTint="@color/purple_500"
                         app:cornerRadius="20dp"
-                        app:icon="@drawable/ic_baseline_calendar_today_24"
                         app:iconTint="@android:color/white" />
 
                     <LinearLayout
