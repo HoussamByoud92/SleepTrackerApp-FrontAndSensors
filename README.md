@@ -58,11 +58,9 @@ GET  /get_user_sessions.php // Get user sleep history
 
 ---
 
-## 📊 Screenshots
+## 📊 Screenrecording
 
-| Register | Dashboard | AI Insights |
-|---------|-----------|-------------|
-| ![Register](assets/register.png) | ![Dashboard](assets/home.png) | ![AI](assets/ai_insights.png) |
+
 
 ---
 
@@ -88,6 +86,7 @@ GET  /get_user_sessions.php // Get user sleep history
 
 ### ✅ Prerequisites
 - Android Studio (Arctic Fox or higher)
+- NetBeans 25
 - PHP server (XAMPP, WAMP, etc.)
 - MySQL database
 
@@ -98,8 +97,9 @@ git clone https://github.com/HoussamByoud92/SleepTrackerApp-FrontAndSensors
 
 # Import Android project in Android Studio
 # Start backend server (Apache + MySQL)
+# Open the zipped file in NetBeans 24+
+# create a database in phpmyadmin with the file "sleep.sql"
 ```
-
 ---
 
 ## 🧑‍💻 Contributors
@@ -110,12 +110,6 @@ git clone https://github.com/HoussamByoud92/SleepTrackerApp-FrontAndSensors
 
 ---
 
-## 📚 License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
 ## 🌐 Useful Links
 
 - 📂 **Project Repository:**  
@@ -123,7 +117,3 @@ This project is licensed under the [MIT License](LICENSE).
 
 - 📄 **Live Documentation:**  
   [README.md](https://github.com/HoussamByoud92/SleepTrackerApp-FrontAndSensors/README.md)
-
----
-
-> "Let AI wake you smarter and sleep you deeper." 💤
